@@ -1,5 +1,6 @@
 package com.ibm.auth.controller;
 
+import com.ibm.auth.common.payload.ApiResponse;
 import com.ibm.auth.payload.request.UpdateUserRequest;
 import com.ibm.auth.payload.response.UserResponse;
 import com.ibm.auth.service.UserService;
@@ -18,55 +19,30 @@ public class UserController {
 
     private final UserService userService;
 
-    /**
-     * GET ALL USERS
-     * ADMIN ONLY
-     */
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<UserResponse>> getAllUsers() {
-
-        return ResponseEntity.ok(
-                userService.getAllUsers()
-        );
+    public ResponseEntity<ApiResponse<List<UserResponse>>> getAllUsers() {
+        return ResponseEntity.ok(userService.getAllUsers());
     }
 
-    /**
-     * GET LOGGED-IN USER
-     */
     @GetMapping("/me")
-    public ResponseEntity<UserResponse> getCurrentUser() {
-
-        return ResponseEntity.ok(
-                userService.getCurrentUser()
-        );
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ApiResponse<UserResponse>> getCurrentUser() {
+        return ResponseEntity.ok(userService.getCurrentUser());
     }
 
-    /**
-     * GET USER BY ID
-     * ADMIN OR OWNER
-     */
     @GetMapping("/{id}")
-    public ResponseEntity<UserResponse> getUserById(
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ApiResponse<UserResponse>> getUserById(
             @PathVariable String id) {
-
-        return ResponseEntity.ok(
-                userService.getUserById(id)
-        );
+        return ResponseEntity.ok(userService.getUserById(id));
     }
 
-    /**
-     * UPDATE USER
-     * ADMIN OR OWNER
-     */
     @PutMapping("/{id}")
-    public ResponseEntity<UserResponse> updateUser(
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ApiResponse<UserResponse>> updateUser(
             @PathVariable String id,
             @Valid @RequestBody UpdateUserRequest request) {
-
-        return ResponseEntity.ok(
-                userService.updateUser(id, request)
-        );
+        return ResponseEntity.ok(userService.updateUser(id, request));
     }
-
 }

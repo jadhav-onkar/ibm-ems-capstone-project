@@ -3,7 +3,9 @@ package com.ibm.auth.service.impl;
 import com.ibm.auth.common.exception.EmailAlreadyExistsException;
 import com.ibm.auth.common.exception.UserNotFoundException;
 import com.ibm.auth.common.exception.UsernameAlreadyExistsException;
+import com.ibm.auth.common.payload.ApiResponse;
 import com.ibm.auth.entity.User;
+import com.ibm.auth.payload.enums.Role;
 import com.ibm.auth.payload.request.UpdateUserRequest;
 import com.ibm.auth.payload.response.UserResponse;
 import com.ibm.auth.repository.UserRepository;
@@ -23,7 +25,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
 
     /**
-     * Convert Entity -> DTO
+     * Entity -> DTO
      */
     private UserResponse mapToResponse(User user) {
 
@@ -40,40 +42,40 @@ public class UserServiceImpl implements UserService {
      * Get All Users
      */
     @Override
-    public List<UserResponse> getAllUsers() {
+    public ApiResponse<List<UserResponse>> getAllUsers() {
 
-        return userRepository.findAll()
+        List<UserResponse> users = userRepository.findAll()
                 .stream()
                 .map(this::mapToResponse)
                 .toList();
+
+        return new ApiResponse<>(
+                true,
+                "Users fetched successfully",
+                users
+        );
     }
 
     /**
-     * Logged In User
+     * Get Logged-in User
      */
     @Override
-    public UserResponse getCurrentUser() {
+    public ApiResponse<UserResponse> getCurrentUser() {
 
-        Authentication authentication =
-                SecurityContextHolder
-                        .getContext()
-                        .getAuthentication();
+        User user = getLoggedInUser();
 
-        String username = authentication.getName();
-
-        User user = userRepository
-                .findByUsername(username)
-                .orElseThrow(() ->
-                        new UserNotFoundException("User not found"));
-
-        return mapToResponse(user);
+        return new ApiResponse<>(
+                true,
+                "User fetched successfully",
+                mapToResponse(user)
+        );
     }
 
-        /**
+    /**
      * Get User By Id
      */
     @Override
-    public UserResponse getUserById(String id) {
+    public ApiResponse<UserResponse> getUserById(String id) {
 
         User loggedInUser = getLoggedInUser();
 
@@ -87,15 +89,20 @@ public class UserServiceImpl implements UserService {
             throw new RuntimeException("Access Denied");
         }
 
-        return mapToResponse(targetUser);
+        return new ApiResponse<>(
+                true,
+                "User fetched successfully",
+                mapToResponse(targetUser)
+        );
     }
 
     /**
      * Update User
      */
     @Override
-    public UserResponse updateUser(String id,
-                                   UpdateUserRequest request) {
+    public ApiResponse<UserResponse> updateUser(
+            String id,
+            UpdateUserRequest request) {
 
         User loggedInUser = getLoggedInUser();
 
@@ -103,7 +110,6 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() ->
                         new UserNotFoundException("User not found"));
 
-        // Only ADMIN or owner
         if (!isAdmin(loggedInUser)
                 && !loggedInUser.getId().equals(id)) {
 
@@ -111,48 +117,47 @@ public class UserServiceImpl implements UserService {
         }
 
         // Username validation
-        if (!user.getUsername().equals(request.getUsername())) {
+        if (request.getUsername() != null
+                && !request.getUsername().equals(user.getUsername())) {
 
-            userRepository.findByUsername(request.getUsername())
-                    .ifPresent(u -> {
-                        throw new UsernameAlreadyExistsException(
-                                "Username already exists");
-                    });
+            if (userRepository.existsByUsername(request.getUsername())) {
+                throw new UsernameAlreadyExistsException(
+                        "Username already exists");
+            }
 
             user.setUsername(request.getUsername());
         }
 
         // Email validation
-        if (!user.getEmail().equals(request.getEmail())) {
+        if (request.getEmail() != null
+                && !request.getEmail().equals(user.getEmail())) {
 
-            userRepository.findByEmail(request.getEmail())
-                    .ifPresent(u -> {
-                        throw new EmailAlreadyExistsException(
-                                "Email already exists");
-                    });
+            if (userRepository.existsByEmail(request.getEmail())) {
+                throw new EmailAlreadyExistsException(
+                        "Email already exists");
+            }
 
             user.setEmail(request.getEmail());
         }
 
-        // Update fields
-        user.setEnabled(request.isEnabled());
-
         user.setUpdatedAt(LocalDateTime.now());
 
-        User updatedUser = userRepository.save(user);
+        User savedUser = userRepository.save(user);
 
-        return mapToResponse(updatedUser);
+        return new ApiResponse<>(
+                true,
+                "User updated successfully",
+                mapToResponse(savedUser)
+        );
     }
 
     /**
-     * Get Logged-in User
+     * Logged-in User
      */
     private User getLoggedInUser() {
 
         Authentication authentication =
-                SecurityContextHolder
-                        .getContext()
-                        .getAuthentication();
+                SecurityContextHolder.getContext().getAuthentication();
 
         String username = authentication.getName();
 
@@ -167,10 +172,7 @@ public class UserServiceImpl implements UserService {
     private boolean isAdmin(User user) {
 
         return user.getRoles()
-                .stream()
-                .anyMatch(role ->
-                        role.name().equals("ROLE_ADMIN"));
+                .contains(Role.ROLE_ADMIN);
     }
-
 
 }
