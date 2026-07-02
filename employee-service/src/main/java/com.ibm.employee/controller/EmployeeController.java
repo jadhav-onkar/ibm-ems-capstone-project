@@ -160,4 +160,13 @@ public class EmployeeController {
                         sortBy,
                         direction));
     }
+    
+//    Get All Employees
+    @GetMapping("/all")
+    public ResponseEntity<List<EmployeeResponse>> getAllEmployees() {
+
+        return ResponseEntity.ok(
+                employeeService.getAllEmployees()
+        );
+    }
 }

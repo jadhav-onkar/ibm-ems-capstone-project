@@ -41,4 +41,6 @@ public interface EmployeeService {
             int size,
             String sortBy,
             String direction);
+    
+    List<EmployeeResponse> getAllEmployees();
 }

@@ -44,4 +44,6 @@ public interface EmployeeRepository
     List<Employee> findByManagerIdAndIsDeletedFalse(String managerId);
 
     List<Employee> findByEmploymentStatusAndIsDeletedFalse(EmploymentStatus status);
+    
+    List<Employee> findByIsDeletedFalse();
 }

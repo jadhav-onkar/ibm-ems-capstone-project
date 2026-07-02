@@ -208,4 +208,14 @@ public class EmployeeServiceImpl
                 .findAllByIsDeletedFalse(pageable)
                 .map(employeeMapper::toResponse);
     }
+    
+//    Get All Employees
+    @Override
+    public List<EmployeeResponse> getAllEmployees() {
+
+        return employeeRepository.findByIsDeletedFalse()
+                .stream()
+                .map(employeeMapper::toResponse)
+                .toList();
+    }
 }
