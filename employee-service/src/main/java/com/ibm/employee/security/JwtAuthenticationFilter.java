@@ -24,12 +24,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain)
+            HttpServletResponse response,
+            FilterChain filterChain)
             throws ServletException, IOException {
 
         // Get Authorization header
         String authHeader = request.getHeader("Authorization");
+
+        System.out.println("authHeader " + authHeader);
 
         // If no token is present, continue without authentication
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
@@ -40,8 +42,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // Remove "Bearer " prefix
         String token = authHeader.substring(7);
 
+        System.out.println("Token " + token);
+
         // Validate token
-        if (!jwtService.isValid(token)) {
+        boolean valid = jwtService.isValid(token);
+        System.out.println("Token valid = " + valid);
+
+        if (!valid) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -58,17 +65,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 .collect(Collectors.toList());
 
         // Create authentication object
-        UsernamePasswordAuthenticationToken authentication =
-                new UsernamePasswordAuthenticationToken(
-                        username,
-                        null,
-                        authorities
-                );
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                username,
+                null,
+                authorities);
 
         authentication.setDetails(
                 new WebAuthenticationDetailsSource()
-                        .buildDetails(request)
-        );
+                        .buildDetails(request));
 
         // Store authentication in SecurityContext
         SecurityContextHolder.getContext().setAuthentication(authentication);

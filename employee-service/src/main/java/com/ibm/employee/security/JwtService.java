@@ -57,8 +57,8 @@ public class JwtService {
     }
 
     public List<String> extractRoles(String token) {
-        return extractClaims(token)
-                .get("roles", List.class);
+        List<String> roles = extractClaims(token).get("roles", List.class);
+        return roles == null ? List.of() : roles;
     }
 
     public boolean isValid(String token) {
@@ -67,6 +67,8 @@ public class JwtService {
             extractClaims(token);
             return true;
         } catch (Exception ex) {
+            System.out.println(ex.getClass().getName());
+            System.out.println(ex.getMessage());
             return false;
         }
     }
