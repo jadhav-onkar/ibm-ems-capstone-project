@@ -77,10 +77,13 @@ public class JwtService {
 
             Claims claims = extractClaims(token);
 
-            return claims.getExpiration()
-                    .after(new Date());
+            boolean valid = claims.getExpiration().after(new Date());
 
-        } catch (JwtException | IllegalArgumentException ex) {
+            return valid;
+
+        } catch (Exception ex) {
+
+            ex.printStackTrace();
 
             return false;
         }

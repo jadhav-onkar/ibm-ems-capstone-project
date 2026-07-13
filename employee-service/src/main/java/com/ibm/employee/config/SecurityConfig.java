@@ -1,6 +1,8 @@
 package com.ibm.employee.config;
- 
 import com.ibm.employee.security.JwtAuthenticationFilter;
+import com.ibm.employee.security.JwtAuthenticationEntryPoint;
+import com.ibm.employee.security.JwtAccessDeniedHandler;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,6 +25,10 @@ import java.util.List;
 public class SecurityConfig {
  
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    
+    private final JwtAuthenticationEntryPoint authenticationEntryPoint;
+
+    private final JwtAccessDeniedHandler accessDeniedHandler;
  
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http)
@@ -39,6 +45,11 @@ public class SecurityConfig {
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
+                
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint(authenticationEntryPoint)
+                        .accessDeniedHandler(accessDeniedHandler)
+                )
  
                 // Configure endpoint authorization
                 .authorizeHttpRequests(auth -> auth
@@ -48,7 +59,7 @@ public class SecurityConfig {
  
                         // Public endpoints
                         .requestMatchers(
-                                "/api/v1/auth/**",
+//                                "/api/v1/auth/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
                                 "/v3/api-docs/**",

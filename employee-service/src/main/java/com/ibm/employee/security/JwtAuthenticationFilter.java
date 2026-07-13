@@ -18,8 +18,7 @@ import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
-public class JwtAuthenticationFilter
-        extends OncePerRequestFilter {
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
 
@@ -30,50 +29,51 @@ public class JwtAuthenticationFilter
             FilterChain filterChain)
             throws ServletException, IOException {
 
-        String authHeader =
-                request.getHeader("Authorization");
+        String authHeader = request.getHeader("Authorization");
 
-        if (authHeader == null ||
-                !authHeader.startsWith("Bearer ")) {
-
+        // Continue if Authorization header is missing or invalid
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        String token =
-                authHeader.substring(7);
+        // Extract JWT token
+        String token = authHeader.substring(7);
 
+        // Validate JWT
         if (!jwtService.isValid(token)) {
-
             filterChain.doFilter(request, response);
             return;
         }
 
-        String username =
-                jwtService.extractUsername(token);
+        // Extract username and roles
+        String username = jwtService.extractUsername(token);
+        List<String> roles = jwtService.extractRoles(token);
 
-        List<String> roles =
-                jwtService.extractRoles(token);
+        // Convert roles to GrantedAuthority
+        List<SimpleGrantedAuthority> authorities = roles.stream()
+                .map(SimpleGrantedAuthority::new)
+                .collect(Collectors.toList());
 
-        List<SimpleGrantedAuthority> authorities =
-                roles.stream()
-                        .map(SimpleGrantedAuthority::new)
-                        .collect(Collectors.toList());
-
+        // Create Authentication object
         UsernamePasswordAuthenticationToken authentication =
                 new UsernamePasswordAuthenticationToken(
                         username,
                         null,
-                        authorities);
+                        authorities
+                );
 
         authentication.setDetails(
                 new WebAuthenticationDetailsSource()
-                        .buildDetails(request));
+                        .buildDetails(request)
+        );
 
-        SecurityContextHolder
-                .getContext()
-                .setAuthentication(authentication);
+        // Store authentication in SecurityContext
+        if (SecurityContextHolder.getContext().getAuthentication() == null) {
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+        }
 
+        // Continue the filter chain
         filterChain.doFilter(request, response);
     }
 }

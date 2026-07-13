@@ -5,17 +5,20 @@ import java.util.List;
 import com.ibm.employee.dto.request.CreateEmployeeRequest;
 import com.ibm.employee.dto.request.UpdateEmployeeRequest;
 import com.ibm.employee.dto.request.UpdateStatusRequest;
-
 import com.ibm.employee.dto.response.EmployeeResponse;
 import com.ibm.employee.entity.enums.EmploymentStatus;
 import com.ibm.employee.service.EmployeeService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.data.domain.Page;
 
 @RestController
 @RequestMapping("/api/v1/employees")
@@ -24,41 +27,56 @@ public class EmployeeController {
 
     private final EmployeeService employeeService;
 
-//    Create Employee
+    // ============================
+    // CREATE EMPLOYEE
+    // ADMIN & MANAGER
+    // ============================
+
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PostMapping
-    public ResponseEntity<EmployeeResponse>
-    createEmployee(
+    public ResponseEntity<EmployeeResponse> createEmployee(
             @Valid
             @RequestBody CreateEmployeeRequest request) {
 
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(employeeService
-                        .createEmployee(request));
+                .body(employeeService.createEmployee(request));
     }
 
-//    Gte Employee By Id
+    // ============================
+    // GET EMPLOYEE BY ID
+    // ADMIN & MANAGER
+    // ============================
+
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_MANAGER')")
     @GetMapping("/{id}")
-    public ResponseEntity<EmployeeResponse>
-    getEmployeeById(@PathVariable String id) {
+    public ResponseEntity<EmployeeResponse> getEmployeeById(
+            @PathVariable String id) {
 
         return ResponseEntity.ok(
                 employeeService.getEmployeeById(id));
     }
-    
-//    Update Employee
+
+    // ============================
+    // UPDATE EMPLOYEE
+    // ADMIN ONLY
+    // ============================
+
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PutMapping("/{id}")
-    public ResponseEntity<EmployeeResponse>
-    updateEmployee(
+    public ResponseEntity<EmployeeResponse> updateEmployee(
             @PathVariable String id,
             @RequestBody UpdateEmployeeRequest request) {
 
         return ResponseEntity.ok(
-                employeeService.updateEmployee(
-                        id,
-                        request));
+                employeeService.updateEmployee(id, request));
     }
-    
-//    Soft Delete
+
+    // ============================
+    // DELETE EMPLOYEE
+    // ADMIN ONLY
+    // ============================
+
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteEmployee(
             @PathVariable String id) {
@@ -67,91 +85,108 @@ public class EmployeeController {
 
         return ResponseEntity.noContent().build();
     }
-    
-//    Get by Code
+
+    // ============================
+    // GET EMPLOYEE BY CODE
+    // ADMIN & MANAGER
+    // ============================
+
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_MANAGER')")
     @GetMapping("/code/{employeeCode}")
-    public ResponseEntity<EmployeeResponse>
-    getByCode(
+    public ResponseEntity<EmployeeResponse> getByCode(
             @PathVariable String employeeCode) {
 
         return ResponseEntity.ok(
-                employeeService
-                        .getEmployeeByCode(
-                                employeeCode));
+                employeeService.getEmployeeByCode(employeeCode));
     }
-    
-//    Get by Department
+
+    // ============================
+    // GET EMPLOYEE BY DEPARTMENT
+    // ADMIN & MANAGER
+    // ============================
+
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_MANAGER')")
     @GetMapping("/department/{departmentId}")
-    public ResponseEntity<List<EmployeeResponse>>
-    getByDepartment(
+    public ResponseEntity<List<EmployeeResponse>> getByDepartment(
             @PathVariable String departmentId) {
 
         return ResponseEntity.ok(
-                employeeService.getByDepartment(
-                        departmentId));
+                employeeService.getByDepartment(departmentId));
     }
-    
-//    Get by Designation
+
+    // ============================
+    // GET EMPLOYEE BY DESIGNATION
+    // ADMIN & MANAGER
+    // ============================
+
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_MANAGER')")
     @GetMapping("/designation/{designationId}")
-    public ResponseEntity<List<EmployeeResponse>>
-    getByDesignation(
+    public ResponseEntity<List<EmployeeResponse>> getByDesignation(
             @PathVariable String designationId) {
 
         return ResponseEntity.ok(
-                employeeService.getByDesignation(
-                        designationId));
+                employeeService.getByDesignation(designationId));
     }
-    
-//    Get by Manager
+
+    // ============================
+    // GET EMPLOYEE BY MANAGER
+    // ADMIN & MANAGER
+    // ============================
+
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_MANAGER')")
     @GetMapping("/manager/{managerId}")
-    public ResponseEntity<List<EmployeeResponse>>
-    getByManager(
+    public ResponseEntity<List<EmployeeResponse>> getByManager(
             @PathVariable String managerId) {
 
         return ResponseEntity.ok(
-                employeeService.getByManager(
-                        managerId));
+                employeeService.getByManager(managerId));
     }
-    
-//    Get by Status
+
+    // ============================
+    // GET EMPLOYEE BY STATUS
+    // ADMIN & MANAGER
+    // ============================
+
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_MANAGER')")
     @GetMapping("/status/{status}")
-    public ResponseEntity<List<EmployeeResponse>>
-    getByStatus(
+    public ResponseEntity<List<EmployeeResponse>> getByStatus(
             @PathVariable EmploymentStatus status) {
 
         return ResponseEntity.ok(
                 employeeService.getByStatus(status));
     }
-    
-//    Update Status
+
+    // ============================
+    // UPDATE STATUS
+    // ADMIN ONLY
+    // ============================
+
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PatchMapping("/{id}/status")
-    public ResponseEntity<EmployeeResponse>
-    updateStatus(
+    public ResponseEntity<EmployeeResponse> updateStatus(
             @PathVariable String id,
             @RequestBody UpdateStatusRequest request) {
 
         return ResponseEntity.ok(
-                employeeService.updateStatus(
-                        id,
-                        request));
+                employeeService.updateStatus(id, request));
     }
-    
-//    Pagination API
+
+    // ============================
+    // PAGINATION
+    // ADMIN & MANAGER
+    // ============================
+
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_MANAGER')")
     @GetMapping
-    public ResponseEntity<Page<EmployeeResponse>>
-    getAllEmployees(
+    public ResponseEntity<Page<EmployeeResponse>> getAllEmployees(
 
-            @RequestParam(defaultValue = "0")
-            int page,
+            @RequestParam(defaultValue = "0") int page,
 
-            @RequestParam(defaultValue = "10")
-            int size,
+            @RequestParam(defaultValue = "10") int size,
 
-            @RequestParam(defaultValue = "firstName")
-            String sortBy,
+            @RequestParam(defaultValue = "firstName") String sortBy,
 
-            @RequestParam(defaultValue = "asc")
-            String direction) {
+            @RequestParam(defaultValue = "asc") String direction) {
 
         return ResponseEntity.ok(
                 employeeService.getAllEmployees(
@@ -160,13 +195,37 @@ public class EmployeeController {
                         sortBy,
                         direction));
     }
-    
-//    Get All Employees
+
+    // ============================
+    // GET ALL EMPLOYEES
+    // ADMIN & MANAGER
+    // ============================
+
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_MANAGER')")
     @GetMapping("/all")
     public ResponseEntity<List<EmployeeResponse>> getAllEmployees() {
 
+//        System.out.println(SecurityContextHolder.getContext().getAuthentication());
+
         return ResponseEntity.ok(
-                employeeService.getAllEmployees()
-        );
+                employeeService.getAllEmployees());
+    }
+
+    // ============================
+    // CURRENT USER
+    // ANY AUTHENTICATED USER
+    // ============================
+
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/me")
+    public String currentUser(Authentication authentication) {
+
+//        System.out.println(authentication);
+
+        authentication.getAuthorities()
+                .forEach(authority ->
+                        System.out.println("Authority = " + authority.getAuthority()));
+
+        return authentication.getAuthorities().toString();
     }
 }
