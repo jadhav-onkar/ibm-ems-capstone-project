@@ -90,7 +90,13 @@ public class AuthServiceImpl implements AuthService {
                     .collect(Collectors.toSet());
 
             // Generate JWT
-            String token = jwtUtil.generateToken(request.getUsername());
+//            String token = jwtUtil.generateToken(request.getUsername());
+
+            // Generate JWT Updated
+            String token = jwtUtil.generateToken(
+                    request.getUsername(),
+                    roles
+            );
 
             LoginResponse loginResponse = LoginResponse.builder()
                     .token(token)

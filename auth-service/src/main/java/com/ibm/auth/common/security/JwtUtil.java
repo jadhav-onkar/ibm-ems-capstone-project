@@ -6,10 +6,12 @@ import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import com.ibm.auth.payload.enums.Role;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.function.Function;
+import java.util.Set;
 
 @Component
 public class JwtUtil {
@@ -25,10 +27,27 @@ public class JwtUtil {
     }
 
     // Generate JWT
-    public String generateToken(String username) {
+//    public String generateToken(String username) {
+//
+//        return Jwts.builder()
+//                .subject(username)
+//                .issuedAt(new Date())
+//                .expiration(new Date(System.currentTimeMillis() + jwtExpiration))
+//                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+//                .compact();
+//    }
+    
+//    New generate token with roles
+    public String generateToken(String username, Set<Role> roles) {
 
         return Jwts.builder()
                 .subject(username)
+                .claim(
+                        "roles",
+                        roles.stream()
+                                .map(Role::name)
+                                .toList()
+                )
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + jwtExpiration))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
