@@ -1,4 +1,4 @@
-﻿package com.ibm.attendance.controller;
+package com.ibm.attendance.controller;
 
 import com.ibm.attendance.dto.AttendanceHistoryResponse;
 import com.ibm.attendance.dto.AttendanceRequest;

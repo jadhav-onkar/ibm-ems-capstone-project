@@ -1,4 +1,4 @@
-﻿package com.ibm.attendance.mapper;
+package com.ibm.attendance.mapper;
 
 import com.ibm.attendance.dto.AttendanceResponse;
 import com.ibm.attendance.entity.Attendance;

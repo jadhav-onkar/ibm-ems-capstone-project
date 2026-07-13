@@ -34,6 +34,7 @@ public class PayrollServiceImpl implements PayrollService {
     private final PayslipRepository payslipRepository;
     private final SalaryHistoryRepository salaryHistoryRepository;
     private final EmployeeClient employeeClient;
+    private final com.ibm.payroll.client.AuthClient authClient;
 
     @Override
     public ApiResponse<PayrollRunResponse> generatePayroll(GeneratePayrollRequest request, String authorizationHeader) {

@@ -1,4 +1,4 @@
-﻿package com.ibm.attendance.entity;
+package com.ibm.attendance.entity;
 
 import java.time.LocalDate;
 import java.time.LocalTime;

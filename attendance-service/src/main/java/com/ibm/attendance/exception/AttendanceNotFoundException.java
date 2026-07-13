@@ -1,4 +1,4 @@
-﻿package com.ibm.attendance.exception;
+package com.ibm.attendance.exception;
 
 public class AttendanceNotFoundException extends RuntimeException {
 

@@ -1,10 +1,9 @@
 package com.ibm.employee.security;
 
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
+import java.io.IOException;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -12,24 +11,26 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.stream.Collectors;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final JwtService jwtService;
+        private final JwtService jwtService;
 
-    @Override
-    protected void doFilterInternal(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            FilterChain filterChain)
-            throws ServletException, IOException {
+        @Override
+        protected void doFilterInternal(HttpServletRequest request,
+                        HttpServletResponse response,
+                        FilterChain filterChain)
+                        throws ServletException, IOException {
 
-        String authHeader = request.getHeader("Authorization");
+                // Get Authorization header
+                String authHeader = request.getHeader("Authorization");
 
         // Continue if Authorization header is missing or invalid
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
@@ -40,20 +41,27 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // Extract JWT token
         String token = authHeader.substring(7);
 
-        // Validate JWT
-        if (!jwtService.isValid(token)) {
-            filterChain.doFilter(request, response);
-            return;
-        }
+                System.out.println("Token " + token);
 
-        // Extract username and roles
-        String username = jwtService.extractUsername(token);
-        List<String> roles = jwtService.extractRoles(token);
+                // Validate token
+                boolean valid = jwtService.isValid(token);
+                System.out.println("Token valid = " + valid);
 
-        // Convert roles to GrantedAuthority
-        List<SimpleGrantedAuthority> authorities = roles.stream()
-                .map(SimpleGrantedAuthority::new)
-                .collect(Collectors.toList());
+                if (!valid) {
+                        filterChain.doFilter(request, response);
+                        return;
+                }
+
+                // Extract username
+                String username = jwtService.extractUsername(token);
+
+                // Extract roles
+                List<String> roles = jwtService.extractRoles(token);
+
+                // Convert roles to Spring Security authorities
+                List<SimpleGrantedAuthority> authorities = roles.stream()
+                                .map(SimpleGrantedAuthority::new)
+                                .collect(Collectors.toList());
 
         // Create Authentication object
         UsernamePasswordAuthenticationToken authentication =

@@ -1,4 +1,4 @@
-﻿package com.ibm.attendance.enums;
+package com.ibm.attendance.enums;
 
 public enum AttendanceStatus {
 

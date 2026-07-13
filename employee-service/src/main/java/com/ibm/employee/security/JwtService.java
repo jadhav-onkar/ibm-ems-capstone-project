@@ -52,9 +52,8 @@ public class JwtService {
      */
     @SuppressWarnings("unchecked")
     public List<String> extractRoles(String token) {
-
-        return extractClaims(token)
-                .get("roles", List.class);
+        List<String> roles = extractClaims(token).get("roles", List.class);
+        return roles == null ? List.of() : roles;
     }
 
     /**
@@ -62,8 +61,7 @@ public class JwtService {
      */
     public boolean isTokenExpired(String token) {
 
-        Date expiration =
-                extractClaims(token).getExpiration();
+        Date expiration = extractClaims(token).getExpiration();
 
         return expiration.before(new Date());
     }
@@ -85,6 +83,8 @@ public class JwtService {
 
             ex.printStackTrace();
 
+            System.out.println(ex.getClass().getName());
+            System.out.println(ex.getMessage());
             return false;
         }
     }

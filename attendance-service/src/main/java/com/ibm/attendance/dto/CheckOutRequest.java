@@ -1,4 +1,4 @@
-﻿package com.ibm.attendance.dto;
+package com.ibm.attendance.dto;
 
 import jakarta.validation.constraints.NotBlank;
 
