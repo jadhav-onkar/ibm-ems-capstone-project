@@ -163,6 +163,10 @@ public class AttendanceServiceImpl implements AttendanceService {
                 .findByEmployeeIdAndDate(request.getEmployeeId(), today)
                 .orElseThrow(() -> new RuntimeException("Please check-in first before check-out"));
 
+        
+        if (attendance.getCheckOut() != null) {
+            throw new RuntimeException("Employee already checked out today.");
+        }
         // set checkout time
         LocalTime checkOutTime = LocalTime.now();
         attendance.setCheckOut(checkOutTime);

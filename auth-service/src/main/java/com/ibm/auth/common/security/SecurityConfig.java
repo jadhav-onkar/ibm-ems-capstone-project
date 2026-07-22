@@ -45,28 +45,29 @@ public class SecurityConfig {
         public SecurityFilterChain securityFilterChain(HttpSecurity http)
                         throws Exception {
 
-                http
-                                .csrf(csrf -> csrf.disable())
-                                .cors(Customizer.withDefaults())
-                                .sessionManagement(session -> session
-                                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                                .authorizeHttpRequests(auth -> auth
-                                                .requestMatchers(
-                                                                "/api/v1/auth/signup",
-                                                                "/api/v1/auth/login",
-                                                                "/api/v1/auth/forgot-password",
-                                                                "/api/v1/auth/verify-otp",
-                                                                "/api/v1/auth/reset-password",
-                                                                // Swagger
-                                                                "/swagger-ui/**",
-                                                                "/swagger-ui.html",
-                                                                "/v3/api-docs/**",
-                                                                "/v3/api-docs")
-                                                .permitAll()
-                                                .anyRequest().authenticated())
-                                .authenticationProvider(authenticationProvider())
-                                .addFilterBefore(jwtFilter,
-                                                UsernamePasswordAuthenticationFilter.class);
+        http
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(
+                                "/api/v1/auth/signup",
+                                "/api/v1/auth/login",
+                                "/api/v1/auth/forgot-password",
+                                "/api/v1/auth/verify-otp",
+                                "/api/v1/auth/reset-password",
+                                "/api/v1/users/me",
+                                // Swagger
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/v3/api-docs/**",
+                                "/v3/api-docs"
+                        ).permitAll()
+                        .anyRequest().authenticated()
+                )
+                .authenticationProvider(authenticationProvider())
+                .addFilterBefore(jwtFilter,
+                        UsernamePasswordAuthenticationFilter.class);
 
                 return http.build();
         }
